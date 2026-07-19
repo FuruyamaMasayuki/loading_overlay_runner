@@ -1,10 +1,10 @@
-# future_loading_overlay
+# loading_overlay_runner
 
 A global, full-screen loading overlay for Flutter. Wire it up once and call it
 from anywhere — no `BuildContext` required — to show a spinner while a
 `Future` (or a batch of them) runs.
 
-![Demo: showing the overlay via run(), a manual handle, a custom indicator/background, and calling it from a second screen](https://raw.githubusercontent.com/FuruyamaMasayuki/future_loading_overlay/main/doc/demo.gif)
+![Demo: showing the overlay via run(), a manual handle, a custom indicator/background, and calling it from a second screen](https://raw.githubusercontent.com/FuruyamaMasayuki/loading_overlay_runner/main/doc/demo.gif)
 
 ## Features
 
@@ -31,14 +31,14 @@ from anywhere — no `BuildContext` required — to show a spinner while a
 
 ```yaml
 dependencies:
-  future_loading_overlay: ^0.0.1
+  loading_overlay_runner: ^0.0.1
 ```
 
 Wire it into `MaterialApp` (or `CupertinoApp`) once, at the root of your app:
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:future_loading_overlay/future_loading_overlay.dart';
+import 'package:loading_overlay_runner/loading_overlay_runner.dart';
 
 void main() => runApp(const MyApp());
 
@@ -48,21 +48,21 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      builder: FutureLoadingOverlay.init(),
+      builder: LoadingOverlayRunner.init(),
       home: const HomePage(),
     );
   }
 }
 ```
 
-That's it — every screen in the app can now call `FutureLoadingOverlay.*`.
+That's it — every screen in the app can now call `LoadingOverlayRunner.*`.
 
 ## Usage
 
 ### Run a future
 
 ```dart
-final profile = await FutureLoadingOverlay.run(
+final profile = await LoadingOverlayRunner.run(
   () => api.fetchProfile(),
   label: 'Fetching profile',
 );
@@ -74,7 +74,7 @@ them the way you normally would:
 
 ```dart
 try {
-  await FutureLoadingOverlay.run(() => api.save(form));
+  await LoadingOverlayRunner.run(() => api.save(form));
 } catch (e) {
   showErrorDialog(e);
 }
@@ -87,7 +87,7 @@ several imperative steps — `show()` returns a handle. Dispose it when the
 work is done:
 
 ```dart
-final handle = FutureLoadingOverlay.show(label: 'Uploading');
+final handle = LoadingOverlayRunner.show(label: 'Uploading');
 try {
   await step1();
   await step2();
@@ -104,7 +104,7 @@ can't corrupt the count.
 ### Run several futures at once
 
 ```dart
-final results = await FutureLoadingOverlay.runAllTasks<Profile>([
+final results = await LoadingOverlayRunner.runAllTasks<Profile>([
   LoadingTask('Profile', () => api.fetchProfile()),
   LoadingTask('Settings', () => api.fetchSettings()),
 ]);
@@ -133,7 +133,7 @@ If you don't need per-task labels, `runAll` takes a plain list of futures
 instead of `LoadingTask`s:
 
 ```dart
-final results = await FutureLoadingOverlay.runAll<void>([
+final results = await LoadingOverlayRunner.runAll<void>([
   () => api.ping(),
   () => api.sync(),
 ]);
@@ -142,9 +142,9 @@ final results = await FutureLoadingOverlay.runAll<void>([
 ### Customizing the appearance
 
 ```dart
-FutureLoadingOverlay.run(
+LoadingOverlayRunner.run(
   () => api.save(),
-  config: const FutureLoadingOverlayConfig(
+  config: const LoadingOverlayRunnerConfig(
     indicator: MyBrandedSpinner(),
     background: ColoredBox(color: Color(0xCC1A1A2E)),
     minDisplayDuration: Duration(milliseconds: 250),
@@ -161,7 +161,7 @@ FutureLoadingOverlay.run(
   the work finishes sooner, to avoid flicker on very fast requests.
 - `dismissible` — see below.
 
-Set a default for the whole app via `FutureLoadingOverlay.init(defaultConfig:
+Set a default for the whole app via `LoadingOverlayRunner.init(defaultConfig:
 ...)`; a `config` passed to an individual `show`/`run`/`runAll` call overrides
 it for that call.
 
@@ -193,9 +193,9 @@ background; only the overlay's bookkeeping is discarded, so their results
 ### Watching state
 
 ```dart
-FutureLoadingOverlay.controller.isShowingListenable; // ValueListenable<bool>
-FutureLoadingOverlay.controller.activeTasksListenable; // ValueListenable<List<ActiveTaskInfo>>
-FutureLoadingOverlay.controller.events; // Stream<FutureLoadingOverlayEvent>
+LoadingOverlayRunner.controller.isShowingListenable; // ValueListenable<bool>
+LoadingOverlayRunner.controller.activeTasksListenable; // ValueListenable<List<ActiveTaskInfo>>
+LoadingOverlayRunner.controller.events; // Stream<LoadingOverlayRunnerEvent>
 ```
 
 `events` has no replay buffer — subscribe before something happens to observe
@@ -205,14 +205,14 @@ it. For point-in-time state, read the `ValueListenable`s (or their current
 ### Riverpod
 
 ```dart
-import 'package:future_loading_overlay/future_loading_overlay.dart';
-import 'package:future_loading_overlay/riverpod.dart';
+import 'package:loading_overlay_runner/loading_overlay_runner.dart';
+import 'package:loading_overlay_runner/riverpod.dart';
 
 class LoadingBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isShowing =
-        ref.watch(isFutureLoadingOverlayShowingProvider).valueOrNull ?? false;
+        ref.watch(isLoadingOverlayRunnerShowingProvider).valueOrNull ?? false;
     final tasks =
         ref.watch(activeLoadingTasksProvider).valueOrNull ?? const [];
     ...
@@ -222,9 +222,9 @@ class LoadingBanner extends ConsumerWidget {
 
 Three providers are included:
 
-- `isFutureLoadingOverlayShowingProvider` — `StreamProvider<bool>`
+- `isLoadingOverlayRunnerShowingProvider` — `StreamProvider<bool>`
 - `activeLoadingTasksProvider` — `StreamProvider<List<ActiveTaskInfo>>`
-- `futureLoadingOverlayEventProvider` — `StreamProvider<FutureLoadingOverlayEvent>`
+- `loadingOverlayRunnerEventProvider` — `StreamProvider<LoadingOverlayRunnerEvent>`
 
 ## Caveats
 
@@ -248,9 +248,9 @@ Three providers are included:
 - **`indicator`/`background` render outside your app's exact theme context
   in edge cases.** They're built inside `MaterialApp`'s own tree (via
   `builder`), so `Theme.of`/`Directionality` resolve normally — this only
-  matters if you construct `FutureLoadingOverlayHost` directly instead of
-  through `FutureLoadingOverlay.init()`.
-- **`FutureLoadingOverlay.init()`'s first call must run before `runApp()`
+  matters if you construct `LoadingOverlayRunnerHost` directly instead of
+  through `LoadingOverlayRunner.init()`.
+- **`LoadingOverlayRunner.init()`'s first call must run before `runApp()`
   builds the tree** — it's what lets its back-button handling register ahead
   of your `Navigator`/router (see the `BackButtonGuard` doc comment for
   why). Passing it as the `builder:` argument, as shown above, already

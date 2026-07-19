@@ -27,23 +27,23 @@ class _LoadingHandleImpl implements LoadingHandle {
 /// overlay is showing, and the event stream.
 ///
 /// Framework-agnostic — nothing here depends on [BuildContext] or [Overlay],
-/// which is what lets `FutureLoadingOverlayHost` render it and Riverpod
+/// which is what lets `LoadingOverlayRunnerHost` render it and Riverpod
 /// providers observe it without either one owning the state.
 ///
 /// The single source of truth is [_tasks] plus [_sessionPins]. Every other
 /// piece of state (`isShowing`, `activeTasks`) is derived from them, so they
 /// can never drift out of sync with each other.
-class FutureLoadingOverlayController {
-  FutureLoadingOverlayController({FutureLoadingOverlayConfig? defaultConfig})
-    : _defaultConfig = defaultConfig ?? const FutureLoadingOverlayConfig();
+class LoadingOverlayRunnerController {
+  LoadingOverlayRunnerController({LoadingOverlayRunnerConfig? defaultConfig})
+    : _defaultConfig = defaultConfig ?? const LoadingOverlayRunnerConfig();
 
-  FutureLoadingOverlayConfig _defaultConfig;
+  LoadingOverlayRunnerConfig _defaultConfig;
 
   /// Replaces the fallback config used when a `show`/`run`/`runAll` call
   /// doesn't pass its own. Does not affect the session already in progress:
   /// the session resolved and captured its config (per-call or the default
   /// at that moment) when it opened.
-  void updateDefaultConfig(FutureLoadingOverlayConfig config) {
+  void updateDefaultConfig(LoadingOverlayRunnerConfig config) {
     _defaultConfig = config;
   }
 
@@ -73,10 +73,10 @@ class FutureLoadingOverlayController {
   /// closing an overlay that a later `show()` reopened while it waited.
   int _generation = 0;
 
-  FutureLoadingOverlayConfig? _sessionConfig;
+  LoadingOverlayRunnerConfig? _sessionConfig;
 
   /// When the current display session became visible. Basis for
-  /// [FutureLoadingOverlayConfig.minDisplayDuration]: the guarantee is
+  /// [LoadingOverlayRunnerConfig.minDisplayDuration]: the guarantee is
   /// "visible at least this long since it appeared", so the delayed hide
   /// waits only the *remaining* time, not the full duration after the last
   /// task finishes.
@@ -86,8 +86,8 @@ class FutureLoadingOverlayController {
   final ValueNotifier<List<ActiveTaskInfo>> _activeTasks =
       ValueNotifier<List<ActiveTaskInfo>>(const <ActiveTaskInfo>[]);
 
-  final StreamController<FutureLoadingOverlayEvent> _events =
-      StreamController<FutureLoadingOverlayEvent>.broadcast();
+  final StreamController<LoadingOverlayRunnerEvent> _events =
+      StreamController<LoadingOverlayRunnerEvent>.broadcast();
 
   /// Whether the overlay is currently visible (including the
   /// `minDisplayDuration` grace period after the last task finished).
@@ -104,17 +104,17 @@ class FutureLoadingOverlayController {
 
   /// Broadcast stream of overlay lifecycle and task events. No replay
   /// buffer: subscribe before events occur to observe them.
-  Stream<FutureLoadingOverlayEvent> get events => _events.stream;
+  Stream<LoadingOverlayRunnerEvent> get events => _events.stream;
 
   /// The config in effect for the current display session — whichever
   /// `show`/`run`/`runAll` call started it — or the controller's default
   /// when nothing is showing.
-  FutureLoadingOverlayConfig get effectiveConfig =>
+  LoadingOverlayRunnerConfig get effectiveConfig =>
       _sessionConfig ?? _defaultConfig;
 
   /// Starts a manually-managed loading request. Dispose the returned handle
   /// when the work it represents finishes.
-  LoadingHandle show({FutureLoadingOverlayConfig? config, String? label}) {
+  LoadingHandle show({LoadingOverlayRunnerConfig? config, String? label}) {
     final id = _startTask(
       config: config,
       label: label,
@@ -127,7 +127,7 @@ class FutureLoadingOverlayController {
   /// (successfully or not) even if [future] throws.
   Future<T> run<T>(
     Future<T> Function() future, {
-    FutureLoadingOverlayConfig? config,
+    LoadingOverlayRunnerConfig? config,
     String? label,
   }) async {
     final id = _startTask(
@@ -155,7 +155,7 @@ class FutureLoadingOverlayController {
     List<LoadingTask<T>> tasks, {
     ExecutionMode mode = ExecutionMode.parallel,
     bool stopOnError = false,
-    FutureLoadingOverlayConfig? config,
+    LoadingOverlayRunnerConfig? config,
   }) async {
     if (tasks.isEmpty) return <TaskResult<T>>[];
 
@@ -275,7 +275,7 @@ class FutureLoadingOverlayController {
 
   /// Opens (or joins) a display session on behalf of a `runAll` batch,
   /// keeping the overlay up across the batch's task boundaries.
-  void _acquireSessionPin(FutureLoadingOverlayConfig? config) {
+  void _acquireSessionPin(LoadingOverlayRunnerConfig? config) {
     final wasIdle = _tasks.isEmpty && _sessionPins == 0;
     _sessionPins++;
     _generation++; // invalidates any delayed hide currently in flight
@@ -300,7 +300,7 @@ class FutureLoadingOverlayController {
   }
 
   int _startTask({
-    FutureLoadingOverlayConfig? config,
+    LoadingOverlayRunnerConfig? config,
     String? label,
     required ActiveTaskSource source,
   }) {

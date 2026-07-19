@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:future_loading_overlay/future_loading_overlay.dart';
+import 'package:loading_overlay_runner/loading_overlay_runner.dart';
 
 class _RecordingNavigatorObserver extends NavigatorObserver {
   int popCount = 0;
@@ -37,18 +37,18 @@ class _TwoRouteHome extends StatelessWidget {
 }
 
 /// Builds the app the way real usage is documented: wiring through
-/// [FutureLoadingOverlay.init], not by hand-constructing
-/// [FutureLoadingOverlayHost]. The back-button race this suite guards
+/// [LoadingOverlayRunner.init], not by hand-constructing
+/// [LoadingOverlayRunnerHost]. The back-button race this suite guards
 /// against only reproduces (and only gets fixed) through this exact path —
 /// see [BackButtonGuard]'s doc comment.
 Widget _app({
   required NavigatorObserver observer,
-  FutureLoadingOverlayConfig? defaultConfig,
+  LoadingOverlayRunnerConfig? defaultConfig,
 }) {
-  FutureLoadingOverlay.resetForTest(defaultConfig: defaultConfig);
+  LoadingOverlayRunner.resetForTest(defaultConfig: defaultConfig);
   return MaterialApp(
     navigatorObservers: [observer],
-    builder: FutureLoadingOverlay.init(),
+    builder: LoadingOverlayRunner.init(),
     home: const _TwoRouteHome(),
   );
 }
@@ -61,7 +61,7 @@ void main() {
 
     expect(find.text('home page'), findsOneWidget);
 
-    final handle = FutureLoadingOverlay.show();
+    final handle = LoadingOverlayRunner.show();
     await tester.pump();
     expect(
       find.text('home page'),
@@ -87,7 +87,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('second page'), findsOneWidget);
 
-    final handle = FutureLoadingOverlay.show();
+    final handle = LoadingOverlayRunner.show();
     await tester.pump();
 
     // Simulate 3 back-button presses while the overlay is showing. Event-
@@ -121,11 +121,11 @@ void main() {
     // back-navigation observer already registered. If init() re-registered
     // its guard (dispose + new), the guard would move to the END of the
     // observer list — behind MaterialApp's — and this pop would go through.
-    FutureLoadingOverlay.resetForTest();
+    LoadingOverlayRunner.resetForTest();
     final observer = _RecordingNavigatorObserver();
     Widget build() => MaterialApp(
       navigatorObservers: [observer],
-      builder: FutureLoadingOverlay.init(),
+      builder: LoadingOverlayRunner.init(),
       home: const _TwoRouteHome(),
     );
 
@@ -136,7 +136,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('second page'), findsOneWidget);
 
-    final handle = FutureLoadingOverlay.show();
+    final handle = LoadingOverlayRunner.show();
     await tester.pump();
 
     await tester.binding.handlePopRoute();
@@ -169,15 +169,15 @@ void main() {
   testWidgets('barrier tap does not dismiss by default', (tester) async {
     await tester.pumpWidget(_app(observer: _RecordingNavigatorObserver()));
 
-    FutureLoadingOverlay.show();
+    LoadingOverlayRunner.show();
     await tester.pump();
-    expect(FutureLoadingOverlay.controller.isShowing, isTrue);
+    expect(LoadingOverlayRunner.controller.isShowing, isTrue);
 
     await tester.tapAt(const Offset(10, 10));
     await tester.pump();
 
     expect(
-      FutureLoadingOverlay.controller.isShowing,
+      LoadingOverlayRunner.controller.isShowing,
       isTrue,
       reason: 'default config is not dismissible',
     );
@@ -188,16 +188,16 @@ void main() {
   ) async {
     await tester.pumpWidget(_app(observer: _RecordingNavigatorObserver()));
 
-    FutureLoadingOverlay.show(
-      config: const FutureLoadingOverlayConfig(dismissible: true),
+    LoadingOverlayRunner.show(
+      config: const LoadingOverlayRunnerConfig(dismissible: true),
     );
     await tester.pump();
-    expect(FutureLoadingOverlay.controller.isShowing, isTrue);
+    expect(LoadingOverlayRunner.controller.isShowing, isTrue);
 
     await tester.tapAt(const Offset(10, 10));
     await tester.pump();
 
-    expect(FutureLoadingOverlay.controller.isShowing, isFalse);
+    expect(LoadingOverlayRunner.controller.isShowing, isFalse);
   });
 
   testWidgets('reopening during the closing grace period renders the NEW config', (
@@ -205,8 +205,8 @@ void main() {
   ) async {
     await tester.pumpWidget(_app(observer: _RecordingNavigatorObserver()));
 
-    FutureLoadingOverlay.show(
-      config: const FutureLoadingOverlayConfig(
+    LoadingOverlayRunner.show(
+      config: const LoadingOverlayRunnerConfig(
         indicator: Text('spinner A'),
         minDisplayDuration: Duration(milliseconds: 100),
       ),
@@ -215,8 +215,8 @@ void main() {
     expect(find.text('spinner A'), findsOneWidget);
 
     // isShowing never toggles here — the barrier must still rebuild.
-    final second = FutureLoadingOverlay.show(
-      config: const FutureLoadingOverlayConfig(indicator: Text('spinner B')),
+    final second = LoadingOverlayRunner.show(
+      config: const LoadingOverlayRunnerConfig(indicator: Text('spinner B')),
     );
     await tester.pump();
 
@@ -230,8 +230,8 @@ void main() {
   testWidgets('custom indicator and background are rendered', (tester) async {
     await tester.pumpWidget(_app(observer: _RecordingNavigatorObserver()));
 
-    FutureLoadingOverlay.show(
-      config: const FutureLoadingOverlayConfig(
+    LoadingOverlayRunner.show(
+      config: const LoadingOverlayRunnerConfig(
         indicator: Text('loading...'),
         background: ColoredBox(color: Colors.red),
       ),

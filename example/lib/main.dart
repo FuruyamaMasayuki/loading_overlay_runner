@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:future_loading_overlay/future_loading_overlay.dart';
-import 'package:future_loading_overlay/riverpod.dart';
+import 'package:loading_overlay_runner/loading_overlay_runner.dart';
+import 'package:loading_overlay_runner/riverpod.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -13,13 +13,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'future_loading_overlay demo',
+      title: 'loading_overlay_runner demo',
       theme: ThemeData(colorSchemeSeed: Colors.deepPurple),
       // The one line that wires the whole package in. From here on, every
-      // screen in the app can call FutureLoadingOverlay.show/run/runAll
+      // screen in the app can call LoadingOverlayRunner.show/run/runAll
       // without a BuildContext.
-      builder: FutureLoadingOverlay.init(
-        defaultConfig: const FutureLoadingOverlayConfig(
+      builder: LoadingOverlayRunner.init(
+        defaultConfig: const LoadingOverlayRunnerConfig(
           minDisplayDuration: Duration(milliseconds: 250),
         ),
       ),
@@ -39,7 +39,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('future_loading_overlay demo')),
+      appBar: AppBar(title: const Text('loading_overlay_runner demo')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -49,7 +49,7 @@ class HomePage extends StatelessWidget {
             title: 'run() — the common case',
             children: [
               FilledButton(
-                onPressed: () => FutureLoadingOverlay.run(
+                onPressed: () => LoadingOverlayRunner.run(
                   () => _fakeNetworkCall(),
                   label: 'Fetching profile',
                 ),
@@ -58,7 +58,7 @@ class HomePage extends StatelessWidget {
               FilledButton(
                 onPressed: () async {
                   try {
-                    await FutureLoadingOverlay.run(
+                    await LoadingOverlayRunner.run(
                       () => _fakeNetworkCall(fail: true),
                       label: 'Saving (will fail)',
                     );
@@ -79,7 +79,7 @@ class HomePage extends StatelessWidget {
             children: [
               FilledButton(
                 onPressed: () {
-                  final handle = FutureLoadingOverlay.show(
+                  final handle = LoadingOverlayRunner.show(
                     label: 'Manual 2s',
                   );
                   Future<void>.delayed(
@@ -95,7 +95,7 @@ class HomePage extends StatelessWidget {
             title: 'runAll() — batch of futures',
             children: [
               FilledButton(
-                onPressed: () => FutureLoadingOverlay.runAllTasks<void>([
+                onPressed: () => LoadingOverlayRunner.runAllTasks<void>([
                   LoadingTask('Profile', () => _fakeNetworkCall()),
                   LoadingTask('Settings', () => _fakeNetworkCall()),
                   LoadingTask(
@@ -106,7 +106,7 @@ class HomePage extends StatelessWidget {
                 child: const Text('Run 3 in parallel (one fails)'),
               ),
               FilledButton(
-                onPressed: () => FutureLoadingOverlay.runAllTasks<void>(
+                onPressed: () => LoadingOverlayRunner.runAllTasks<void>(
                   [
                     LoadingTask('Step 1', () => _fakeNetworkCall()),
                     LoadingTask(
@@ -126,9 +126,9 @@ class HomePage extends StatelessWidget {
             title: 'Custom appearance',
             children: [
               FilledButton(
-                onPressed: () => FutureLoadingOverlay.run(
+                onPressed: () => LoadingOverlayRunner.run(
                   () => _fakeNetworkCall(),
-                  config: const FutureLoadingOverlayConfig(
+                  config: const LoadingOverlayRunnerConfig(
                     indicator: _BrandedIndicator(),
                     background: ColoredBox(color: Color(0xCC1A1A2E)),
                   ),
@@ -136,9 +136,9 @@ class HomePage extends StatelessWidget {
                 child: const Text('Custom indicator + background'),
               ),
               FilledButton(
-                onPressed: () => FutureLoadingOverlay.run(
+                onPressed: () => LoadingOverlayRunner.run(
                   () => _fakeNetworkCall(),
-                  config: const FutureLoadingOverlayConfig(
+                  config: const LoadingOverlayRunnerConfig(
                     dismissible: true,
                   ),
                 ),
@@ -174,7 +174,7 @@ class SecondPage extends StatelessWidget {
         child: FilledButton(
           // No BuildContext plumbing needed — this call works exactly the
           // same from any screen in the app.
-          onPressed: () => FutureLoadingOverlay.run(
+          onPressed: () => LoadingOverlayRunner.run(
             () => Future<void>.delayed(const Duration(seconds: 1)),
             label: 'From the second screen',
           ),
@@ -192,7 +192,7 @@ class _ActiveTasksBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isShowing =
-        ref.watch(isFutureLoadingOverlayShowingProvider).valueOrNull ?? false;
+        ref.watch(isLoadingOverlayRunnerShowingProvider).valueOrNull ?? false;
     final tasks =
         ref.watch(activeLoadingTasksProvider).valueOrNull ??
         const <ActiveTaskInfo>[];

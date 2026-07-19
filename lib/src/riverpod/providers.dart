@@ -2,26 +2,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../active_task_info.dart';
 import '../events.dart';
-import '../future_loading_overlay.dart';
+import '../loading_overlay_runner.dart';
 import 'listenable_stream.dart';
 
-/// Emits every [FutureLoadingOverlayEvent] as it happens.
+/// Emits every [LoadingOverlayRunnerEvent] as it happens.
 ///
-/// Like `FutureLoadingOverlayController.events`, this has no replay buffer —
+/// Like `LoadingOverlayRunnerController.events`, this has no replay buffer —
 /// only events that occur after this provider is first watched are
 /// delivered. For point-in-time state, use
-/// [isFutureLoadingOverlayShowingProvider] or [activeLoadingTasksProvider].
-final futureLoadingOverlayEventProvider =
-    StreamProvider.autoDispose<FutureLoadingOverlayEvent>((ref) {
-      return FutureLoadingOverlay.controller.events;
+/// [isLoadingOverlayRunnerShowingProvider] or [activeLoadingTasksProvider].
+final loadingOverlayRunnerEventProvider =
+    StreamProvider.autoDispose<LoadingOverlayRunnerEvent>((ref) {
+      return LoadingOverlayRunner.controller.events;
     });
 
 /// Whether the overlay is currently visible. Emits an initial value
 /// immediately, then updates on every change.
-final isFutureLoadingOverlayShowingProvider = StreamProvider.autoDispose<bool>(
+final isLoadingOverlayRunnerShowingProvider = StreamProvider.autoDispose<bool>(
   (ref) {
     return listenableToStream(
-      FutureLoadingOverlay.controller.isShowingListenable,
+      LoadingOverlayRunner.controller.isShowingListenable,
     );
   },
 );
@@ -31,6 +31,6 @@ final isFutureLoadingOverlayShowingProvider = StreamProvider.autoDispose<bool>(
 final activeLoadingTasksProvider =
     StreamProvider.autoDispose<List<ActiveTaskInfo>>((ref) {
       return listenableToStream(
-        FutureLoadingOverlay.controller.activeTasksListenable,
+        LoadingOverlayRunner.controller.activeTasksListenable,
       );
     });

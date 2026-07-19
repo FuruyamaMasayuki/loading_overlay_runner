@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:future_loading_overlay/future_loading_overlay.dart';
+import 'package:loading_overlay_runner/loading_overlay_runner.dart';
 
 void main() {
   group('show/dispose (ticket-based visibility)', () {
     test('single handle shows then hides', () {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       expect(controller.isShowing, isFalse);
 
       final handle = controller.show();
@@ -17,7 +17,7 @@ void main() {
     });
 
     test('overlay stays visible until every outstanding handle is disposed', () {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final a = controller.show();
       final b = controller.show();
 
@@ -29,7 +29,7 @@ void main() {
     });
 
     test('disposing the same handle twice is a no-op', () {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final a = controller.show();
       final b = controller.show();
 
@@ -44,8 +44,8 @@ void main() {
 
   group('minDisplayDuration / stale-hide protection', () {
     test('a delayed hide does not close an overlay reopened while it waited', () async {
-      final controller = FutureLoadingOverlayController(
-        defaultConfig: const FutureLoadingOverlayConfig(
+      final controller = LoadingOverlayRunnerController(
+        defaultConfig: const LoadingOverlayRunnerConfig(
           minDisplayDuration: Duration(milliseconds: 30),
         ),
       );
@@ -73,15 +73,15 @@ void main() {
     });
 
     test('overlay hides immediately when minDisplayDuration is zero', () {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final handle = controller.show();
       handle.dispose();
       expect(controller.isShowing, isFalse);
     });
 
     test('minDisplayDuration counts from when the overlay appeared, not from the last dispose', () async {
-      final controller = FutureLoadingOverlayController(
-        defaultConfig: const FutureLoadingOverlayConfig(
+      final controller = LoadingOverlayRunnerController(
+        defaultConfig: const LoadingOverlayRunnerConfig(
           minDisplayDuration: Duration(milliseconds: 60),
         ),
       );
@@ -96,8 +96,8 @@ void main() {
     });
 
     test('a task shorter than minDisplayDuration keeps the overlay up for the remainder', () async {
-      final controller = FutureLoadingOverlayController(
-        defaultConfig: const FutureLoadingOverlayConfig(
+      final controller = LoadingOverlayRunnerController(
+        defaultConfig: const LoadingOverlayRunnerConfig(
           minDisplayDuration: Duration(milliseconds: 60),
         ),
       );
@@ -114,9 +114,9 @@ void main() {
 
   group('config first-wins', () {
     test('the config of the call that opens the session wins', () {
-      final controller = FutureLoadingOverlayController();
-      const first = FutureLoadingOverlayConfig(dismissible: true);
-      const second = FutureLoadingOverlayConfig(dismissible: false);
+      final controller = LoadingOverlayRunnerController();
+      const first = LoadingOverlayRunnerConfig(dismissible: true);
+      const second = LoadingOverlayRunnerConfig(dismissible: false);
 
       final a = controller.show(config: first);
       controller.show(config: second); // joins an already-open session
@@ -126,9 +126,9 @@ void main() {
     });
 
     test('a fresh session after fully closing adopts the new config', () {
-      final controller = FutureLoadingOverlayController();
-      const first = FutureLoadingOverlayConfig(dismissible: true);
-      const second = FutureLoadingOverlayConfig(dismissible: false);
+      final controller = LoadingOverlayRunnerController();
+      const first = LoadingOverlayRunnerConfig(dismissible: true);
+      const second = LoadingOverlayRunnerConfig(dismissible: false);
 
       controller.show(config: first).dispose();
       expect(controller.isShowing, isFalse);
@@ -139,12 +139,12 @@ void main() {
 
     test('reopening during the closing grace period adopts the new config '
         'and emits no duplicate OverlayShown', () async {
-      const first = FutureLoadingOverlayConfig(
+      const first = LoadingOverlayRunnerConfig(
         dismissible: true,
         minDisplayDuration: Duration(milliseconds: 60),
       );
-      const second = FutureLoadingOverlayConfig(dismissible: false);
-      final controller = FutureLoadingOverlayController();
+      const second = LoadingOverlayRunnerConfig(dismissible: false);
+      final controller = LoadingOverlayRunnerController();
 
       final shownEvents = <OverlayShown>[];
       final sub = controller.events
@@ -168,14 +168,14 @@ void main() {
 
   group('run', () {
     test('hides after success and returns the value', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final result = await controller.run(() async => 42);
       expect(result, 42);
       expect(controller.isShowing, isFalse);
     });
 
     test('hides and rethrows on failure', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       await expectLater(
         controller.run(() async => throw StateError('boom')),
         throwsA(isA<StateError>()),
@@ -184,7 +184,7 @@ void main() {
     });
 
     test('shows while pending', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final done = Completer<void>();
       final future = controller.run(() async {
         expect(controller.isShowing, isTrue);
@@ -199,14 +199,14 @@ void main() {
 
   group('runAll', () {
     test('empty list returns immediately without showing', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final results = await controller.runAll<int>(const []);
       expect(results, isEmpty);
       expect(controller.isShowing, isFalse);
     });
 
     test('parallel preserves input order regardless of completion order', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final results = await controller.runAll<int>([
         LoadingTask('slow', () async {
           await Future<void>.delayed(const Duration(milliseconds: 20));
@@ -218,7 +218,7 @@ void main() {
     });
 
     test('parallel: one failure does not affect the others', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final results = await controller.runAll<int>([
         LoadingTask('ok', () async => 1),
         LoadingTask('bad', () async => throw StateError('bad')),
@@ -230,7 +230,7 @@ void main() {
     });
 
     test('sequential runs one at a time, in order', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final order = <String>[];
       await controller.runAll<int>(
         [
@@ -251,7 +251,7 @@ void main() {
     });
 
     test('sequential with stopOnError skips remaining tasks', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       var thirdRan = false;
       final results = await controller.runAll<int>(
         [
@@ -272,7 +272,7 @@ void main() {
     });
 
     test('sequential batch is a single session: no hide/re-show between tasks', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final shownEvents = <OverlayShown>[];
       final hiddenEvents = <OverlayHidden>[];
       final subShown = controller.events
@@ -313,7 +313,7 @@ void main() {
 
     test('dismissing mid-batch keeps the overlay closed for the rest of the batch, '
         'but remaining tasks still produce results', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final shownEvents = <OverlayShown>[];
       final sub = controller.events
           .where((e) => e is OverlayShown)
@@ -327,7 +327,7 @@ void main() {
           LoadingTask('b', () async => 2),
         ],
         mode: ExecutionMode.sequential,
-        config: const FutureLoadingOverlayConfig(dismissible: true),
+        config: const LoadingOverlayRunnerConfig(dismissible: true),
       );
 
       await Future<void>.delayed(Duration.zero);
@@ -360,7 +360,7 @@ void main() {
     });
 
     test('overlay shows for the whole batch, not once per task', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final shownEvents = <OverlayShown>[];
       final sub = controller.events
           .where((e) => e is OverlayShown)
@@ -379,7 +379,7 @@ void main() {
 
     test('a run() started mid-batch joins the batch session and keeps it open '
         'until both are done', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final shownEvents = <OverlayShown>[];
       final hiddenEvents = <OverlayHidden>[];
       final subShown = controller.events
@@ -427,7 +427,7 @@ void main() {
 
   group('activeTasks stays in sync', () {
     test('show/run/runAll register and deregister tasks', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       expect(controller.activeTasks, isEmpty);
 
       final handle = controller.show(label: 'manual');
@@ -445,7 +445,7 @@ void main() {
     });
 
     test('runAll(parallel) shows every task as its own entry at once', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final gate = Completer<void>();
       late List<String> labelsWhileRunning;
 
@@ -467,7 +467,7 @@ void main() {
 
   group('forceClear / dismissible', () {
     test('forceClear hides immediately and marks tasks unsuccessful', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final finishedEvents = <TaskFinished>[];
       final sub = controller.events
           .where((e) => e is TaskFinished)
@@ -487,16 +487,16 @@ void main() {
     });
 
     test('barrier tap only force-clears when dismissible is true', () {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       controller.show(
-        config: const FutureLoadingOverlayConfig(dismissible: false),
+        config: const LoadingOverlayRunnerConfig(dismissible: false),
       );
       controller.notifyBarrierTapped();
       expect(controller.isShowing, isTrue);
 
-      final controller2 = FutureLoadingOverlayController();
+      final controller2 = LoadingOverlayRunnerController();
       controller2.show(
-        config: const FutureLoadingOverlayConfig(dismissible: true),
+        config: const LoadingOverlayRunnerConfig(dismissible: true),
       );
       controller2.notifyBarrierTapped();
       expect(controller2.isShowing, isFalse);
@@ -505,10 +505,10 @@ void main() {
 
   group('dismissible during the closing grace period', () {
     test('barrier tap during minDisplayDuration grace hides immediately', () {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       controller
           .show(
-            config: const FutureLoadingOverlayConfig(
+            config: const LoadingOverlayRunnerConfig(
               dismissible: true,
               minDisplayDuration: Duration(seconds: 5),
             ),
@@ -529,14 +529,14 @@ void main() {
   group('updateDefaultConfig vs open session', () {
     test('a session opened without a per-call config keeps the default it '
         'was opened with', () {
-      final controller = FutureLoadingOverlayController(
-        defaultConfig: const FutureLoadingOverlayConfig(dismissible: true),
+      final controller = LoadingOverlayRunnerController(
+        defaultConfig: const LoadingOverlayRunnerConfig(dismissible: true),
       );
       final handle = controller.show(); // no per-call config
       expect(controller.effectiveConfig.dismissible, isTrue);
 
       controller.updateDefaultConfig(
-        const FutureLoadingOverlayConfig(dismissible: false),
+        const LoadingOverlayRunnerConfig(dismissible: false),
       );
       expect(
         controller.effectiveConfig.dismissible,
@@ -554,7 +554,7 @@ void main() {
 
   group('back button / barrier notifications', () {
     test('notifyBackButtonBlocked emits BackButtonBlocked', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final events = <BackButtonBlocked>[];
       final sub = controller.events
           .where((e) => e is BackButtonBlocked)
@@ -572,7 +572,7 @@ void main() {
     });
 
     test('notifyBarrierTapped emits BarrierTapped', () async {
-      final controller = FutureLoadingOverlayController();
+      final controller = LoadingOverlayRunnerController();
       final events = <BarrierTapped>[];
       final sub = controller.events
           .where((e) => e is BarrierTapped)

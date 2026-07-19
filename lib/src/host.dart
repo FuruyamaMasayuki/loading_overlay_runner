@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'active_task_info.dart';
 import 'controller.dart';
 
-/// Inserted by `FutureLoadingOverlay.init` into `MaterialApp.builder`.
+/// Inserted by `LoadingOverlayRunner.init` into `MaterialApp.builder`.
 ///
 /// Keeps the app's own widget tree ([child]) as the base layer at all times
 /// and draws the overlay UI on top of it via [Stack] — [child] is never
@@ -12,24 +12,24 @@ import 'controller.dart';
 ///
 /// This widget only renders the overlay UI. Back-navigation blocking is
 /// handled separately by [BackButtonGuard], registered by
-/// `FutureLoadingOverlay.init` — see that class's doc comment for why it
+/// `LoadingOverlayRunner.init` — see that class's doc comment for why it
 /// can't live here as a widget-scoped observer.
-class FutureLoadingOverlayHost extends StatefulWidget {
-  const FutureLoadingOverlayHost({
+class LoadingOverlayRunnerHost extends StatefulWidget {
+  const LoadingOverlayRunnerHost({
     super.key,
     required this.controller,
     required this.child,
   });
 
-  final FutureLoadingOverlayController controller;
+  final LoadingOverlayRunnerController controller;
   final Widget? child;
 
   @override
-  State<FutureLoadingOverlayHost> createState() =>
-      _FutureLoadingOverlayHostState();
+  State<LoadingOverlayRunnerHost> createState() =>
+      _LoadingOverlayRunnerHostState();
 }
 
-class _FutureLoadingOverlayHostState extends State<FutureLoadingOverlayHost> {
+class _LoadingOverlayRunnerHostState extends State<LoadingOverlayRunnerHost> {
   @override
   Widget build(BuildContext context) {
     final appContent = widget.child ?? const SizedBox.shrink();
@@ -51,7 +51,7 @@ class _FutureLoadingOverlayHostState extends State<FutureLoadingOverlayHost> {
               ValueListenableBuilder<List<ActiveTaskInfo>>(
                 valueListenable: widget.controller.activeTasksListenable,
                 builder: (context, _, _) =>
-                    _FutureLoadingOverlayBarrier(controller: widget.controller),
+                    _LoadingOverlayRunnerBarrier(controller: widget.controller),
               ),
           ],
         );
@@ -61,10 +61,10 @@ class _FutureLoadingOverlayHostState extends State<FutureLoadingOverlayHost> {
   }
 }
 
-class _FutureLoadingOverlayBarrier extends StatelessWidget {
-  const _FutureLoadingOverlayBarrier({required this.controller});
+class _LoadingOverlayRunnerBarrier extends StatelessWidget {
+  const _LoadingOverlayRunnerBarrier({required this.controller});
 
-  final FutureLoadingOverlayController controller;
+  final LoadingOverlayRunnerController controller;
 
   @override
   Widget build(BuildContext context) {

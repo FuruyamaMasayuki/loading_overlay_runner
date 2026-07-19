@@ -4,7 +4,7 @@ Initial release.
 
 * Global, context-free `show`/`run`/`runAll`/`runAllTasks` API for a
   full-screen loading overlay, wired in once via
-  `MaterialApp(builder: FutureLoadingOverlay.init())`.
+  `MaterialApp(builder: LoadingOverlayRunner.init())`.
 * Ticket-based visibility tracking (`LoadingHandle`) instead of a raw
   counter, so stray extra disposes or exceptions can't leave the overlay
   stuck.
@@ -15,7 +15,7 @@ Initial release.
   flicker guard, and config first-wins semantics for overlapping calls.
 * `activeTasks` / `activeTasksListenable` / `events` for observing what's
   currently in flight.
-* Bundled Riverpod providers (`package:future_loading_overlay/riverpod.dart`).
+* Bundled Riverpod providers (`package:loading_overlay_runner/riverpod.dart`).
 * `init()` is idempotent — safe against `builder:` re-evaluation on
   `MaterialApp` rebuilds (keeps the controller and the back-button guard's
   observer priority).
@@ -25,7 +25,7 @@ Initial release.
   grace period correctly adopts the new session's config (indicator/
   background) and emits exactly one `OverlayShown`/`OverlayHidden` pair per
   session instead of a duplicate.
-* `FutureLoadingOverlay.controller` is read-only from outside the package,
+* `LoadingOverlayRunner.controller` is read-only from outside the package,
   so it can no longer be reassigned in a way that would decouple
   `BackButtonGuard` from the controller actually driving the overlay.
 * Sequential `runAll` batches hold the overlay open across task boundaries

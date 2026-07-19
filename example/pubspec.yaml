@@ -35,7 +35,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
-  future_loading_overlay:
+  loading_overlay_runner:
     path: ../
   flutter_riverpod: ^2.6.1
 

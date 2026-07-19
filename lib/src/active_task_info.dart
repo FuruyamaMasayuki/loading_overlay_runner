@@ -2,13 +2,13 @@ import 'package:flutter/foundation.dart';
 
 /// Identifies which API created an [ActiveTaskInfo].
 enum ActiveTaskSource {
-  /// Created via [FutureLoadingOverlay.show].
+  /// Created via [LoadingOverlayRunner.show].
   manual,
 
-  /// Created via [FutureLoadingOverlay.run].
+  /// Created via [LoadingOverlayRunner.run].
   run,
 
-  /// Created via [FutureLoadingOverlay.runAll] / [FutureLoadingOverlay.runAllTasks].
+  /// Created via [LoadingOverlayRunner.runAll] / [LoadingOverlayRunner.runAllTasks].
   runAll,
 }
 
@@ -40,7 +40,7 @@ class ActiveTaskInfo {
   String toString() => 'ActiveTaskInfo(#$id, $label, source: $source)';
 }
 
-/// A labeled unit of work for [FutureLoadingOverlay.runAllTasks].
+/// A labeled unit of work for [LoadingOverlayRunner.runAllTasks].
 @immutable
 class LoadingTask<T> {
   const LoadingTask(this.label, this.future);

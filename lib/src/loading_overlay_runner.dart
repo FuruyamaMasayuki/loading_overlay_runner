@@ -8,20 +8,20 @@ import 'handle.dart';
 import 'host.dart';
 import 'task_result.dart';
 
-/// Static facade over a single app-wide [FutureLoadingOverlayController].
+/// Static facade over a single app-wide [LoadingOverlayRunnerController].
 ///
 /// Wire it up once, in `MaterialApp`/`CupertinoApp`:
 /// ```dart
-/// MaterialApp(builder: FutureLoadingOverlay.init());
+/// MaterialApp(builder: LoadingOverlayRunner.init());
 /// ```
 /// and call [show], [run], or [runAll] from anywhere in the app — no
 /// [BuildContext] required, so it works the same from a widget, a service
 /// class, or a background callback.
-abstract final class FutureLoadingOverlay {
+abstract final class LoadingOverlayRunner {
   /// The controller backing every static method here. Exposed for advanced
   /// use (e.g. wiring your own state-management bridge); most apps never
   /// need to touch it directly — use the Riverpod providers in
-  /// `future_loading_overlay/riverpod.dart` instead.
+  /// `loading_overlay_runner/riverpod.dart` instead.
   ///
   /// Read-only from outside this class. [BackButtonGuard] captures whichever
   /// controller instance is current at construction time — if this field
@@ -29,9 +29,9 @@ abstract final class FutureLoadingOverlay {
   /// the orphaned old instance while the rest of the app moved on to a new
   /// one. [init] and [resetForTest] are the only two places allowed to swap
   /// it, and both keep the guard in sync when they do.
-  static FutureLoadingOverlayController get controller => _controller;
-  static FutureLoadingOverlayController _controller =
-      FutureLoadingOverlayController();
+  static LoadingOverlayRunnerController get controller => _controller;
+  static LoadingOverlayRunnerController _controller =
+      LoadingOverlayRunnerController();
 
   static BackButtonGuard? _guard;
 
@@ -54,20 +54,20 @@ abstract final class FutureLoadingOverlay {
   /// silently breaking back-blocking from that rebuild on. [defaultConfig],
   /// when supplied, is applied to the existing controller as its new
   /// fallback config.
-  static TransitionBuilder init({FutureLoadingOverlayConfig? defaultConfig}) {
+  static TransitionBuilder init({LoadingOverlayRunnerConfig? defaultConfig}) {
     if (defaultConfig != null) {
       _controller.updateDefaultConfig(defaultConfig);
     }
     WidgetsFlutterBinding.ensureInitialized();
     _guard ??= BackButtonGuard(_controller);
     return (context, child) =>
-        FutureLoadingOverlayHost(controller: _controller, child: child);
+        LoadingOverlayRunnerHost(controller: _controller, child: child);
   }
 
   /// Starts a manually-managed loading request. Dispose the returned handle
   /// when the work it represents finishes.
   static LoadingHandle show({
-    FutureLoadingOverlayConfig? config,
+    LoadingOverlayRunnerConfig? config,
     String? label,
   }) {
     return _controller.show(config: config, label: label);
@@ -78,7 +78,7 @@ abstract final class FutureLoadingOverlay {
   /// unchanged).
   static Future<T> run<T>(
     Future<T> Function() future, {
-    FutureLoadingOverlayConfig? config,
+    LoadingOverlayRunnerConfig? config,
     String? label,
   }) {
     return _controller.run(future, config: config, label: label);
@@ -102,7 +102,7 @@ abstract final class FutureLoadingOverlay {
     List<String>? labels,
     ExecutionMode mode = ExecutionMode.parallel,
     bool stopOnError = false,
-    FutureLoadingOverlayConfig? config,
+    LoadingOverlayRunnerConfig? config,
   }) {
     assert(
       labels == null || labels.length == futures.length,
@@ -125,7 +125,7 @@ abstract final class FutureLoadingOverlay {
     List<LoadingTask<T>> tasks, {
     ExecutionMode mode = ExecutionMode.parallel,
     bool stopOnError = false,
-    FutureLoadingOverlayConfig? config,
+    LoadingOverlayRunnerConfig? config,
   }) {
     return _controller.runAll<T>(
       tasks,
@@ -139,9 +139,9 @@ abstract final class FutureLoadingOverlay {
   /// [BackButtonGuard]. Only meant for test isolation between test cases;
   /// app code should never need this.
   @visibleForTesting
-  static void resetForTest({FutureLoadingOverlayConfig? defaultConfig}) {
+  static void resetForTest({LoadingOverlayRunnerConfig? defaultConfig}) {
     _guard?.dispose();
     _guard = null;
-    _controller = FutureLoadingOverlayController(defaultConfig: defaultConfig);
+    _controller = LoadingOverlayRunnerController(defaultConfig: defaultConfig);
   }
 }

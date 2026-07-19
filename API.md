@@ -1,51 +1,51 @@
 # API Reference
 
 Full reference for every public symbol exported from
-`package:future_loading_overlay/future_loading_overlay.dart` and
-`package:future_loading_overlay/riverpod.dart`. For a task-oriented guide,
+`package:loading_overlay_runner/loading_overlay_runner.dart` and
+`package:loading_overlay_runner/riverpod.dart`. For a task-oriented guide,
 see [README.md](README.md).
 
 ## Contents
 
-- [`FutureLoadingOverlay`](#futureloadingoverlay-static-facade)
-- [`FutureLoadingOverlayConfig`](#futureloadingoverlayconfig)
+- [`LoadingOverlayRunner`](#loadingoverlayrunner-static-facade)
+- [`LoadingOverlayRunnerConfig`](#loadingoverlayrunnerconfig)
 - [`LoadingHandle`](#loadinghandle)
 - [`LoadingTask<T>`](#loadingtaskt)
 - [`ActiveTaskInfo`](#activetaskinfo)
 - [`ActiveTaskSource`](#activetasksource)
 - [`ExecutionMode`](#executionmode)
 - [`TaskResult<T>` / `TaskSuccess<T>` / `TaskFailure<T>` / `TaskSkipped<T>`](#taskresultt)
-- [`FutureLoadingOverlayEvent`](#futureloadingoverlayevent-and-subtypes)
-- [`FutureLoadingOverlayController`](#futureloadingoverlaycontroller)
-- [`FutureLoadingOverlayHost`](#futureloadingoverlayhost)
+- [`LoadingOverlayRunnerEvent`](#loadingoverlayrunnerevent-and-subtypes)
+- [`LoadingOverlayRunnerController`](#loadingoverlayrunnercontroller)
+- [`LoadingOverlayRunnerHost`](#loadingoverlayrunnerhost)
 - [`BackButtonGuard`](#backbuttonguard)
 - [Riverpod providers](#riverpod-providers)
 
 ---
 
-## `FutureLoadingOverlay` (static facade)
+## `LoadingOverlayRunner` (static facade)
 
 The main entry point. All members are `static`; the class cannot be
 instantiated.
 
-### `FutureLoadingOverlay.controller`
+### `LoadingOverlayRunner.controller`
 
 ```dart
-static FutureLoadingOverlayController get controller
+static LoadingOverlayRunnerController get controller
 ```
 
 The single app-wide controller backing every other static method.
-Read-only — only [`init`](#futureloadingoverlayinit) and `resetForTest` can
+Read-only — only [`init`](#loadingoverlayrunnerinit) and `resetForTest` can
 swap the underlying instance, which keeps [`BackButtonGuard`](#backbuttonguard)
 (constructed with a specific controller instance) from ever ending up
 watching an orphaned one. Exposed for advanced use (custom state-management
 bridges); most apps only need the Riverpod providers or the
 `events`/`isShowingListenable` getters on it directly.
 
-### `FutureLoadingOverlay.init`
+### `LoadingOverlayRunner.init`
 
 ```dart
-static TransitionBuilder init({FutureLoadingOverlayConfig? defaultConfig})
+static TransitionBuilder init({LoadingOverlayRunnerConfig? defaultConfig})
 ```
 
 Returns a `builder` for `MaterialApp`/`CupertinoApp` that mounts the overlay
@@ -56,7 +56,7 @@ overlay is showing.
 - Use as the `builder:` argument.
 - The first call must run **before** `runApp()` builds the widget tree —
   evaluating it as a constructor argument (as in the usual
-  `MaterialApp(builder: FutureLoadingOverlay.init())` usage) already
+  `MaterialApp(builder: LoadingOverlayRunner.init())` usage) already
   satisfies this.
 - **Idempotent by design**: `builder:` arguments are re-evaluated every time
   the widget constructing `MaterialApp` rebuilds, so repeat calls keep the
@@ -65,25 +65,25 @@ overlay is showing.
   demote it behind `MaterialApp`'s own observer and silently break
   back-blocking).
 - If `defaultConfig` is supplied, it is applied to the existing controller
-  via [`updateDefaultConfig`](#futureloadingoverlaycontroller) as the
+  via [`updateDefaultConfig`](#loadingoverlayrunnercontroller) as the
   fallback config for calls that don't pass their own.
 
-### `FutureLoadingOverlay.show`
+### `LoadingOverlayRunner.show`
 
 ```dart
-static LoadingHandle show({FutureLoadingOverlayConfig? config, String? label})
+static LoadingHandle show({LoadingOverlayRunnerConfig? config, String? label})
 ```
 
 Starts a manually-managed loading request and returns a handle. The overlay
 shows immediately (or stays showing, if it already was). Dispose the handle
 when the work it represents is done.
 
-### `FutureLoadingOverlay.run`
+### `LoadingOverlayRunner.run`
 
 ```dart
 static Future<T> run<T>(
   Future<T> Function() future, {
-  FutureLoadingOverlayConfig? config,
+  LoadingOverlayRunnerConfig? config,
   String? label,
 })
 ```
@@ -91,7 +91,7 @@ static Future<T> run<T>(
 Shows the overlay for the duration of `future`. Hides it once `future`
 completes, whether it succeeds or throws — the error is rethrown unchanged.
 
-### `FutureLoadingOverlay.runAll`
+### `LoadingOverlayRunner.runAll`
 
 ```dart
 static Future<List<TaskResult<T>>> runAll<T>(
@@ -99,7 +99,7 @@ static Future<List<TaskResult<T>>> runAll<T>(
   List<String>? labels,
   ExecutionMode mode = ExecutionMode.parallel,
   bool stopOnError = false,
-  FutureLoadingOverlayConfig? config,
+  LoadingOverlayRunnerConfig? config,
 })
 ```
 
@@ -117,14 +117,14 @@ mode) affects the others.
 - An empty `futures` list returns `[]` immediately without showing the
   overlay.
 
-### `FutureLoadingOverlay.runAllTasks`
+### `LoadingOverlayRunner.runAllTasks`
 
 ```dart
 static Future<List<TaskResult<T>>> runAllTasks<T>(
   List<LoadingTask<T>> tasks, {
   ExecutionMode mode = ExecutionMode.parallel,
   bool stopOnError = false,
-  FutureLoadingOverlayConfig? config,
+  LoadingOverlayRunnerConfig? config,
 })
 ```
 
@@ -132,11 +132,11 @@ Same as `runAll`, but takes pre-labeled [`LoadingTask`](#loadingtaskt)s
 instead of a separate `labels` list — useful when labels are naturally
 computed alongside each task.
 
-### `FutureLoadingOverlay.resetForTest`
+### `LoadingOverlayRunner.resetForTest`
 
 ```dart
 @visibleForTesting
-static void resetForTest({FutureLoadingOverlayConfig? defaultConfig})
+static void resetForTest({LoadingOverlayRunnerConfig? defaultConfig})
 ```
 
 Replaces `controller` with a fresh instance and drops any registered
@@ -145,11 +145,11 @@ code should never call this.
 
 ---
 
-## `FutureLoadingOverlayConfig`
+## `LoadingOverlayRunnerConfig`
 
 ```dart
-class FutureLoadingOverlayConfig {
-  const FutureLoadingOverlayConfig({
+class LoadingOverlayRunnerConfig {
+  const LoadingOverlayRunnerConfig({
     this.indicator,
     this.background,
     this.minDisplayDuration = Duration.zero,
@@ -186,7 +186,7 @@ abstract class LoadingHandle {
 }
 ```
 
-Returned by `FutureLoadingOverlay.show`/`FutureLoadingOverlayController.show`.
+Returned by `LoadingOverlayRunner.show`/`LoadingOverlayRunnerController.show`.
 The overlay hides once every outstanding handle (and every task started via
 `run`/`runAll`) has finished, subject to `minDisplayDuration`. Calling
 `dispose()` more than once is safe and a no-op after the first call.
@@ -204,7 +204,7 @@ class LoadingTask<T> {
 }
 ```
 
-A labeled unit of work for `runAllTasks`/`FutureLoadingOverlayController.runAll`.
+A labeled unit of work for `runAllTasks`/`LoadingOverlayRunnerController.runAll`.
 
 ---
 
@@ -227,7 +227,7 @@ class ActiveTaskInfo {
 ```
 
 Immutable snapshot of a single in-flight loading request, as seen through
-`FutureLoadingOverlayController.activeTasks`/`activeTasksListenable` or a
+`LoadingOverlayRunnerController.activeTasks`/`activeTasksListenable` or a
 `TaskStarted`/`TaskFinished` event. `id` is unique and monotonically
 increasing for the controller's lifetime.
 
@@ -251,7 +251,7 @@ enum ExecutionMode { parallel, sequential }
 ```
 
 How a list of tasks passed to `runAll`/`runAllTasks` is executed. See
-[`FutureLoadingOverlay.runAll`](#futureloadingoverlayrunall) above.
+[`LoadingOverlayRunner.runAll`](#loadingoverlayrunnerrunall) above.
 
 ---
 
@@ -294,21 +294,21 @@ switch (result) {
 
 ---
 
-## `FutureLoadingOverlayEvent` and subtypes
+## `LoadingOverlayRunnerEvent` and subtypes
 
 ```dart
-sealed class FutureLoadingOverlayEvent {}
+sealed class LoadingOverlayRunnerEvent {}
 
-final class OverlayShown extends FutureLoadingOverlayEvent {}
-final class OverlayHidden extends FutureLoadingOverlayEvent {}
-final class BackButtonBlocked extends FutureLoadingOverlayEvent {}
-final class BarrierTapped extends FutureLoadingOverlayEvent {}
+final class OverlayShown extends LoadingOverlayRunnerEvent {}
+final class OverlayHidden extends LoadingOverlayRunnerEvent {}
+final class BackButtonBlocked extends LoadingOverlayRunnerEvent {}
+final class BarrierTapped extends LoadingOverlayRunnerEvent {}
 
-final class TaskStarted extends FutureLoadingOverlayEvent {
+final class TaskStarted extends LoadingOverlayRunnerEvent {
   final ActiveTaskInfo task;
 }
 
-final class TaskFinished extends FutureLoadingOverlayEvent {
+final class TaskFinished extends LoadingOverlayRunnerEvent {
   final ActiveTaskInfo task;
   final Duration elapsed;
   final bool succeeded;
@@ -324,20 +324,20 @@ final class TaskFinished extends FutureLoadingOverlayEvent {
 | `TaskStarted` | Any task starts, via `show`, `run`, `runAll`, or `runAllTasks`. |
 | `TaskFinished` | Any task finishes. `succeeded` is always `true` for `show`-created tasks unless cut short by a dismissible clear, in which case it's `false`. |
 
-Delivered on `FutureLoadingOverlayController.events`, a broadcast `Stream`
+Delivered on `LoadingOverlayRunnerController.events`, a broadcast `Stream`
 with **no replay buffer** — subscribe before an event happens to observe it.
 
 ---
 
-## `FutureLoadingOverlayController`
+## `LoadingOverlayRunnerController`
 
 The framework-agnostic state owner behind the static facade. Construct your
 own instance for tests; the app-wide singleton lives at
-`FutureLoadingOverlay.controller`.
+`LoadingOverlayRunner.controller`.
 
 ```dart
-class FutureLoadingOverlayController {
-  FutureLoadingOverlayController({FutureLoadingOverlayConfig? defaultConfig});
+class LoadingOverlayRunnerController {
+  LoadingOverlayRunnerController({LoadingOverlayRunnerConfig? defaultConfig});
 
   ValueListenable<bool> get isShowingListenable;
   bool get isShowing;
@@ -345,16 +345,16 @@ class FutureLoadingOverlayController {
   ValueListenable<List<ActiveTaskInfo>> get activeTasksListenable;
   List<ActiveTaskInfo> get activeTasks;
 
-  Stream<FutureLoadingOverlayEvent> get events;
+  Stream<LoadingOverlayRunnerEvent> get events;
 
-  FutureLoadingOverlayConfig get effectiveConfig;
-  void updateDefaultConfig(FutureLoadingOverlayConfig config);
+  LoadingOverlayRunnerConfig get effectiveConfig;
+  void updateDefaultConfig(LoadingOverlayRunnerConfig config);
 
-  LoadingHandle show({FutureLoadingOverlayConfig? config, String? label});
+  LoadingHandle show({LoadingOverlayRunnerConfig? config, String? label});
 
   Future<T> run<T>(
     Future<T> Function() future, {
-    FutureLoadingOverlayConfig? config,
+    LoadingOverlayRunnerConfig? config,
     String? label,
   });
 
@@ -362,7 +362,7 @@ class FutureLoadingOverlayController {
     List<LoadingTask<T>> tasks, {
     ExecutionMode mode = ExecutionMode.parallel,
     bool stopOnError = false,
-    FutureLoadingOverlayConfig? config,
+    LoadingOverlayRunnerConfig? config,
   });
 
   void forceClear();
@@ -383,19 +383,19 @@ Notable members not already covered by the facade:
   with each other.
 - **`effectiveConfig`** — the config in effect for the current display
   session (see the first-wins rule under
-  [`FutureLoadingOverlayConfig`](#futureloadingoverlayconfig)), or the
+  [`LoadingOverlayRunnerConfig`](#loadingoverlayrunnerconfig)), or the
   controller's default when nothing is showing.
 - **`updateDefaultConfig(config)`** — replaces the fallback config used when
   a call doesn't pass its own. Does not affect a session already in progress
   (its config was captured when the session opened). This is what
-  `FutureLoadingOverlay.init(defaultConfig: ...)` calls internally.
+  `LoadingOverlayRunner.init(defaultConfig: ...)` calls internally.
 - **`forceClear()`** — forcibly clears every active task and hides the
   overlay immediately. Tasks already in flight (from `run`/`runAll`) keep
   running to completion in the background; only their overlay bookkeeping is
   discarded. This is what a dismissible barrier tap / back-navigation
   attempt calls internally.
 - **`notifyBackButtonBlocked()` / `notifyBarrierTapped()`** — called by
-  `BackButtonGuard`/`FutureLoadingOverlayHost` respectively; emits the
+  `BackButtonGuard`/`LoadingOverlayRunnerHost` respectively; emits the
   corresponding event and, if `effectiveConfig.dismissible` is `true`, calls
   `forceClear()`. Public so a custom host/guard implementation can drive the
   same controller.
@@ -406,22 +406,22 @@ Notable members not already covered by the facade:
 
 ---
 
-## `FutureLoadingOverlayHost`
+## `LoadingOverlayRunnerHost`
 
 ```dart
-class FutureLoadingOverlayHost extends StatefulWidget {
-  const FutureLoadingOverlayHost({
+class LoadingOverlayRunnerHost extends StatefulWidget {
+  const LoadingOverlayRunnerHost({
     super.key,
     required this.controller,
     required this.child,
   });
 
-  final FutureLoadingOverlayController controller;
+  final LoadingOverlayRunnerController controller;
   final Widget? child;
 }
 ```
 
-The widget `FutureLoadingOverlay.init()`'s returned builder mounts. Renders
+The widget `LoadingOverlayRunner.init()`'s returned builder mounts. Renders
 `child` as the base layer at all times (via `Stack`) and draws the overlay
 barrier on top when `controller.isShowing` is `true` — `child` is never
 removed or replaced, which is what prevents a blank screen when the overlay
@@ -429,7 +429,7 @@ toggles.
 
 Only renders UI. Back-navigation blocking is handled separately by
 `BackButtonGuard` — using this widget directly (instead of through
-`FutureLoadingOverlay.init()`) gets you the visual overlay but not the
+`LoadingOverlayRunner.init()`) gets you the visual overlay but not the
 back-button guarantee; see `BackButtonGuard`'s doc comment for why the two
 are split.
 
@@ -441,7 +441,7 @@ are split.
 class BackButtonGuard with WidgetsBindingObserver {
   BackButtonGuard(this.controller);
 
-  final FutureLoadingOverlayController controller;
+  final LoadingOverlayRunnerController controller;
 
   void dispose();
 }
@@ -451,11 +451,11 @@ Intercepts back navigation ahead of the app's own `Navigator`/go_router so it
 can be swallowed while the overlay is showing.
 
 This is a bare `WidgetsBindingObserver`, not a widget, registered directly
-with `WidgetsBinding.instance` — and registered by `FutureLoadingOverlay.init()`
+with `WidgetsBinding.instance` — and registered by `LoadingOverlayRunner.init()`
 *before* `runApp()` builds any widget tree. That timing is deliberate:
 `WidgetsBinding.handlePopRoute()` asks observers in **registration order**,
 not widget-tree order, so an observer added by a widget nested inside
-`MaterialApp` (e.g. one living on `FutureLoadingOverlayHost`) always loses
+`MaterialApp` (e.g. one living on `LoadingOverlayRunnerHost`) always loses
 the race to `MaterialApp`'s own observer, which registers the moment its
 tree mounts. Registering here, before that tree exists, guarantees this
 observer is asked first.
@@ -464,22 +464,22 @@ observer is asked first.
 ancestor, which a context-free, call-from-anywhere API like this one doesn't
 have.
 
-Most apps never construct this directly — `FutureLoadingOverlay.init()`
+Most apps never construct this directly — `LoadingOverlayRunner.init()`
 manages one internally.
 
 ---
 
 ## Riverpod providers
 
-From `package:future_loading_overlay/riverpod.dart` (a separate import — the
+From `package:loading_overlay_runner/riverpod.dart` (a separate import — the
 main library doesn't export these, though the package always depends on
 `flutter_riverpod`).
 
 ```dart
-final futureLoadingOverlayEventProvider =
-    StreamProvider.autoDispose<FutureLoadingOverlayEvent>(...);
+final loadingOverlayRunnerEventProvider =
+    StreamProvider.autoDispose<LoadingOverlayRunnerEvent>(...);
 
-final isFutureLoadingOverlayShowingProvider =
+final isLoadingOverlayRunnerShowingProvider =
     StreamProvider.autoDispose<bool>(...);
 
 final activeLoadingTasksProvider =
@@ -488,11 +488,11 @@ final activeLoadingTasksProvider =
 
 | Provider | Type | Notes |
 |---|---|---|
-| `isFutureLoadingOverlayShowingProvider` | `StreamProvider<bool>` | Emits the current value immediately on first watch, then on every change. |
+| `isLoadingOverlayRunnerShowingProvider` | `StreamProvider<bool>` | Emits the current value immediately on first watch, then on every change. |
 | `activeLoadingTasksProvider` | `StreamProvider<List<ActiveTaskInfo>>` | Same emission behavior, for the active task list. |
-| `futureLoadingOverlayEventProvider` | `StreamProvider<FutureLoadingOverlayEvent>` | Mirrors `controller.events` — no replay buffer, only events after first watch. |
+| `loadingOverlayRunnerEventProvider` | `StreamProvider<LoadingOverlayRunnerEvent>` | Mirrors `controller.events` — no replay buffer, only events after first watch. |
 
-All three read `FutureLoadingOverlay.controller` at watch time and bridge its
+All three read `LoadingOverlayRunner.controller` at watch time and bridge its
 `ValueListenable`s to `Stream`s by listening/unlistening around each
 subscription — they never call `dispose()` on the controller's own
 `ValueNotifier`s, so the app-wide controller's state stays valid regardless
@@ -501,5 +501,5 @@ of how many widgets are (or stop) watching it.
 Access `AsyncValue<T>` as usual:
 
 ```dart
-final isShowing = ref.watch(isFutureLoadingOverlayShowingProvider).valueOrNull ?? false;
+final isShowing = ref.watch(isLoadingOverlayRunnerShowingProvider).valueOrNull ?? false;
 ```

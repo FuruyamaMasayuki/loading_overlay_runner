@@ -14,7 +14,7 @@ import 'package:flutter/foundation.dart';
 /// This intentionally does *not* use `ChangeNotifierProvider`: that provider
 /// calls `dispose()` on the notifier when the provider is disposed (e.g. via
 /// `autoDispose`), which would tear down the shared, app-lifetime
-/// [ValueNotifier]s owned by `FutureLoadingOverlayController` the moment the
+/// [ValueNotifier]s owned by `LoadingOverlayRunnerController` the moment the
 /// last widget stopped watching them — leaving the controller permanently
 /// broken for the rest of the app. Listening and unlistening here, instead
 /// of owning/disposing the listenable, keeps the controller's state

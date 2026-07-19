@@ -1,11 +1,11 @@
-/// Riverpod providers for `future_loading_overlay`.
+/// Riverpod providers for `loading_overlay_runner`.
 ///
 /// Import this alongside the main library when you want to `ref.watch` the
 /// overlay's state instead of using the `events`/`isShowingListenable` APIs
 /// directly:
 /// ```dart
-/// import 'package:future_loading_overlay/future_loading_overlay.dart';
-/// import 'package:future_loading_overlay/riverpod.dart';
+/// import 'package:loading_overlay_runner/loading_overlay_runner.dart';
+/// import 'package:loading_overlay_runner/riverpod.dart';
 /// ```
 library;
 

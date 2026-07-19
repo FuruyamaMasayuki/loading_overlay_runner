@@ -1,9 +1,9 @@
-name: future_loading_overlay
+name: loading_overlay_runner
 description: "Global full-screen loading overlay for Flutter. Show it from any screen, run Futures with automatic show/hide, track active tasks, and integrate with Riverpod."
 version: 0.0.1
-homepage: https://github.com/FuruyamaMasayuki/future_loading_overlay
-repository: https://github.com/FuruyamaMasayuki/future_loading_overlay
-issue_tracker: https://github.com/FuruyamaMasayuki/future_loading_overlay/issues
+homepage: https://github.com/FuruyamaMasayuki/loading_overlay_runner
+repository: https://github.com/FuruyamaMasayuki/loading_overlay_runner
+issue_tracker: https://github.com/FuruyamaMasayuki/loading_overlay_runner/issues
 
 environment:
   sdk: ^3.11.0

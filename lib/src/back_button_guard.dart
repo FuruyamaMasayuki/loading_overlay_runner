@@ -6,7 +6,7 @@ import 'controller.dart';
 /// it can be swallowed while the overlay is showing.
 ///
 /// This is a bare [WidgetsBindingObserver] — not a widget — registered
-/// directly with [WidgetsBinding.instance] by `FutureLoadingOverlay.init`,
+/// directly with [WidgetsBinding.instance] by `LoadingOverlayRunner.init`,
 /// called synchronously before `runApp`. That timing is what matters:
 /// [WidgetsBinding.handlePopRoute] asks observers in *registration order*,
 /// not widget-tree order, so a [WidgetsBindingObserver] added by a widget
@@ -21,7 +21,7 @@ class BackButtonGuard with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
   }
 
-  final FutureLoadingOverlayController controller;
+  final LoadingOverlayRunnerController controller;
   bool _disposed = false;
 
   @override

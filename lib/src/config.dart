@@ -8,8 +8,8 @@ import 'package:flutter/widgets.dart';
 /// This keeps the overlay's appearance stable for the duration of a display
 /// session instead of flickering between configs.
 @immutable
-class FutureLoadingOverlayConfig {
-  const FutureLoadingOverlayConfig({
+class LoadingOverlayRunnerConfig {
+  const LoadingOverlayRunnerConfig({
     this.indicator,
     this.background,
     this.minDisplayDuration = Duration.zero,

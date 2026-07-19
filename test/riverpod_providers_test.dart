@@ -1,27 +1,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:future_loading_overlay/future_loading_overlay.dart';
-import 'package:future_loading_overlay/riverpod.dart';
+import 'package:loading_overlay_runner/loading_overlay_runner.dart';
+import 'package:loading_overlay_runner/riverpod.dart';
 
 void main() {
   setUp(() {
-    FutureLoadingOverlay.resetForTest();
+    LoadingOverlayRunner.resetForTest();
   });
 
-  test('isFutureLoadingOverlayShowingProvider reflects controller state', () async {
+  test('isLoadingOverlayRunnerShowingProvider reflects controller state', () async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
     // Prime the provider (StreamProvider starts in loading state until the
     // first event arrives).
     final sub = container.listen(
-      isFutureLoadingOverlayShowingProvider,
+      isLoadingOverlayRunnerShowingProvider,
       (_, _) {},
     );
     await Future<void>.delayed(Duration.zero);
     expect(sub.read().value, isFalse);
 
-    final handle = FutureLoadingOverlay.show();
+    final handle = LoadingOverlayRunner.show();
     await Future<void>.delayed(Duration.zero);
     expect(sub.read().value, isTrue);
 
@@ -38,7 +38,7 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     expect(sub.read().value, isEmpty);
 
-    final handle = FutureLoadingOverlay.show(label: 'uploading');
+    final handle = LoadingOverlayRunner.show(label: 'uploading');
     await Future<void>.delayed(Duration.zero);
     expect(sub.read().value?.map((t) => t.label), ['uploading']);
 
@@ -47,18 +47,18 @@ void main() {
     expect(sub.read().value, isEmpty);
   });
 
-  test('futureLoadingOverlayEventProvider emits lifecycle events', () async {
+  test('loadingOverlayRunnerEventProvider emits lifecycle events', () async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
-    final events = <FutureLoadingOverlayEvent>[];
-    container.listen(futureLoadingOverlayEventProvider, (_, next) {
+    final events = <LoadingOverlayRunnerEvent>[];
+    container.listen(loadingOverlayRunnerEventProvider, (_, next) {
       final value = next.value;
       if (value != null) events.add(value);
     });
     await Future<void>.delayed(Duration.zero);
 
-    final handle = FutureLoadingOverlay.show();
+    final handle = LoadingOverlayRunner.show();
     handle.dispose();
     await Future<void>.delayed(Duration.zero);
 
